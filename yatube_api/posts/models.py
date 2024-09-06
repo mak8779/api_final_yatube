@@ -1,6 +1,5 @@
 from django.contrib.auth import get_user_model
 from django.db import models
-from django.utils.text import Truncator
 
 from yatube_api.constants import TITLE_LIMIT, TEXT_LIMIT
 
@@ -12,10 +11,9 @@ class Group(models.Model):
     title = models.CharField(max_length=200, verbose_name='Название')
     slug = models.SlugField(unique=True, verbose_name='Слаг')
     description = models.TextField(verbose_name='Описание')
-    truncator = Truncator(title)
 
     def __str__(self):
-        return self.truncator.chars(TITLE_LIMIT, truncate="...")
+        return self.title[:TITLE_LIMIT]
 
 
 class Post(models.Model):
@@ -41,11 +39,11 @@ class Post(models.Model):
         verbose_name='Группа'
     )
 
+    class Meta:
+        ordering = ('pub_date',)
+
     def __str__(self):
         return self.text[:TEXT_LIMIT]
-
-    class Meta:
-        ordering = ['pub_date']
 
 
 class Comment(models.Model):
@@ -82,9 +80,10 @@ class Follow(models.Model):
     )
 
     class Meta:
+        ordering = ('following',)
         constraints = [
             models.UniqueConstraint(
-                fields=['user', 'following'],
+                fields=('user', 'following'),
                 name='unique_following'
             )
         ]

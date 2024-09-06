@@ -4,6 +4,7 @@ from rest_framework import filters, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
+from rest_framework.response import Response
 
 from api.permissions import AuthorOrReadOnly
 from api.serializers import (CommentSerializer, FollowSerializer,
@@ -56,3 +57,15 @@ class FollowViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    def list(self, request, *args, **kwargs):
+        if request.method == 'GET':
+            return super().list(request, *args, **kwargs)
+        else:
+            return Response({"detail": "Method not allowed."}, status=405)
+
+    def create(self, request, *args, **kwargs):
+        if request.method == 'POST':
+            return super().create(request, *args, **kwargs)
+        else:
+            return Response({"detail": "Method not allowed."}, status=405)
