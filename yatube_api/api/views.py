@@ -1,10 +1,9 @@
 from django.contrib.auth import get_user_model
 from django.shortcuts import get_object_or_404
-from rest_framework import filters, viewsets
+from rest_framework import filters, mixins, viewsets
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework.permissions import (IsAuthenticated,
                                         IsAuthenticatedOrReadOnly)
-from rest_framework.response import Response
 
 from api.permissions import AuthorOrReadOnly
 from api.serializers import (CommentSerializer, FollowSerializer,
@@ -45,27 +44,17 @@ class GroupViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [IsAuthenticatedOrReadOnly]
 
 
-class FollowViewSet(viewsets.ModelViewSet):
+class FollowViewSet(mixins.CreateModelMixin, mixins.ListModelMixin,
+                    viewsets.GenericViewSet):
     queryset = Follow.objects.all()
     serializer_class = FollowSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = (IsAuthenticated,)
     filter_backends = (filters.SearchFilter,)
-    search_fields = ('user__username', 'following__username')
+    search_fields = ('user__username', 'following__username',)
 
     def get_queryset(self):
-        return self.request.user.follower.all()
+        new_queryset = Follow.objects.filter(user=self.request.user)
+        return new_queryset
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
-
-    def list(self, request, *args, **kwargs):
-        if request.method == 'GET':
-            return super().list(request, *args, **kwargs)
-        else:
-            return Response({"detail": "Method not allowed."}, status=405)
-
-    def create(self, request, *args, **kwargs):
-        if request.method == 'POST':
-            return super().create(request, *args, **kwargs)
-        else:
-            return Response({"detail": "Method not allowed."}, status=405)
+        return serializer.save(user=self.request.user)
