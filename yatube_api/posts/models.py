@@ -40,9 +40,10 @@ class Post(models.Model):
         null=True,
         verbose_name='Группа'
     )
+    truncator = Truncator(text)
 
     def __str__(self):
-        return self.text
+        return self.truncator.chars(TITLE_LIMIT, truncate="...")
 
 
 class Comment(models.Model):
@@ -60,7 +61,8 @@ class Comment(models.Model):
     )
     text = models.TextField(verbose_name='Текст комментария')
     created = models.DateTimeField(
-        'Дата добавления', auto_now_add=True, db_index=True)
+        'Дата добавления', auto_now_add=True, db_index=True
+    )
 
 
 class Follow(models.Model):
