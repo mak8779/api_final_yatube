@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from django.db import models
 from django.utils.text import Truncator
 
-from yatube_api.constants import TITLE_LIMIT
+from yatube_api.constants import TITLE_LIMIT, TEXT_LIMIT
 
 
 User = get_user_model()
@@ -40,10 +40,12 @@ class Post(models.Model):
         null=True,
         verbose_name='Группа'
     )
-    truncator = Truncator(text)
 
     def __str__(self):
-        return self.truncator.chars(TITLE_LIMIT, truncate="...")
+        return self.text[:TEXT_LIMIT]
+
+    class Meta:
+        ordering = ['pub_date']
 
 
 class Comment(models.Model):
